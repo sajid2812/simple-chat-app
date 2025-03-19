@@ -10,5 +10,8 @@ wss.on("connection", (socket) => {
 
   socket.on("message", (message) => {
     console.log("message " + message.toString());
+    setTimeout(() => {
+      socket.send(message.toString() + ": sent from the server");
+    }, 1000);
   });
 });
