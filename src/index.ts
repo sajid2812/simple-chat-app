@@ -1,17 +1,16 @@
-import { WebSocketServer } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 
 const wss = new WebSocketServer({ port: 8080 });
 
-let userCount = 0;
+let allSockets: WebSocket[] = [];
 
 wss.on("connection", (socket) => {
-  userCount += 1;
-  console.log(userCount);
+  allSockets.push(socket);
 
   socket.on("message", (message) => {
-    console.log("message " + message.toString());
-    setTimeout(() => {
-      socket.send(message.toString() + ": sent from the server");
-    }, 1000);
+    console.log("message received" + message.toString());
+    for (let i = 0; i < allSockets.length; i++) {
+      allSockets[i].send(message.toString() + ": sent from the server");
+    }
   });
 });
