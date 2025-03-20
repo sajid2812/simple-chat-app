@@ -13,4 +13,8 @@ wss.on("connection", (socket) => {
       allSockets[i].send(message.toString() + ": sent from the server");
     }
   });
+
+  socket.on("close", () => {
+    allSockets = allSockets.filter((a) => a !== socket);
+  });
 });
