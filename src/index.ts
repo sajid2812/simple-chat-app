@@ -2,19 +2,34 @@ import { WebSocket, WebSocketServer } from "ws";
 
 const wss = new WebSocketServer({ port: 8080 });
 
-let allSockets: WebSocket[] = [];
+interface User {
+  socket: WebSocket;
+  room: string;
+}
+
+let allSockets: User[] = [];
 
 wss.on("connection", (socket) => {
-  allSockets.push(socket);
-
   socket.on("message", (message) => {
-    console.log("message received" + message.toString());
-    for (let i = 0; i < allSockets.length; i++) {
-      allSockets[i].send(message.toString() + ": sent from the server");
+    // @ts-ignore
+    const parsedMessage = JSON.parse(message);
+    if (parsedMessage.type === "join") {
+      allSockets.push({
+        socket,
+        room: parsedMessage.payload.roomId,
+      });
+    }
+    if (parsedMessage.type === "chat") {
+      const currUser = allSockets.find((a) => a.socket === socket);
+      for (let i = 0; i < allSockets.length; i++) {
+        if (allSockets[i].room === currUser.room) {
+          allSockets[i].socket.send(parsedMessage.payload.message);
+        }
+      }
     }
   });
 
   socket.on("close", () => {
-    allSockets = allSockets.filter((a) => a !== socket);
+    // do something
   });
 });
